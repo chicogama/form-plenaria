@@ -110,12 +110,35 @@ omissões. Uma linha por avaliador × julgamento na aba `avaliadores`.
 - SUS em branco com `TAREFA` = `sim`/`parcial`/`nao`: o participante fez a tarefa e clicou em "Pular este questionário". A média da SUS considera só quem respondeu.
 - `SUS_ESCORE`: já calculado (0–100).
 
-## 7. Métricas
+## 7. Painel de resultados (`metricas.html`)
 
-`metricas.html` pede a chave e mostra **apenas agregados** (acerto por condição e por
-julgamento, erros com certeza alta, tempo de leitura, percepção, SUS, tarefa, fidelidade e
-concordância entre avaliadores) com a situação de cada meta M1–M6. Linhas com
-`MODALIDADE = piloto` são excluídas.
+Painel com as figuras e tabelas pedidas no artigo (seção 5, RQ2 e RQ3) e no relatório
+extensionista (Quadro 2 e parágrafos de resultados). Cada figura já sai no formato do trabalho
+(título numerado acima, "Fonte: dados da pesquisa (ano)." abaixo), pronta para captura de tela.
+
+- **Uso:** abra `https://SEU-SITE/metricas.html`, informe a chave (`CHAVE_METRICAS`) e clique em
+  *Carregar resultados*. A chave fica só nesta aba do navegador.
+- **Demonstração:** `metricas.html?demo=1` mostra o painel com **dados fictícios** gerados por
+  `node ferramentas/gerar-demo.js` (rode de novo se mudar `Agregacao.gs` ou `dados.js`). Nunca use
+  essas figuras no trabalho; a página avisa no topo e a fonte das figuras diz "dados fictícios".
+- **Impressão:** Ctrl+P esconde o cabeçalho e os controles e evita quebrar figuras entre páginas.
+- **Cálculo:** `apps-script/Agregacao.gs` (função pura `agregar_`, a mesma usada pelo gerador de
+  demonstração). Linhas `MODALIDADE = piloto` são excluídas. O endpoint devolve só agregados, com duas
+  exceções deliberadas para a análise: respostas abertas (R7, R8, omissões) em ordem embaralhada e
+  sem nenhum outro campo, e os escores SUS individuais ordenados, sem vínculo com o participante.
+- **Depois de atualizar o Apps Script:** no editor, crie o arquivo `Agregacao` (+ → Script), cole
+  `apps-script/Agregacao.gs`, substitua `Code.gs` e publique uma **nova versão** da implantação
+  (Implantar → Gerenciar implantações → editar → Nova versão). Sem isso o painel avisa que o Apps
+  Script publicado é a versão antiga.
+
+| Seção do painel | Figuras e tabelas | Onde entra |
+|---|---|---|
+| Visão geral | indicadores; Quadro 2 (metas M1–M6) | Relatório, Quadro 2 |
+| Participantes | perfil P1, P2, P4–P6; versões; formação dos avaliadores | Artigo, metodologia/resultados |
+| Compreensão (RQ3) | acerto por pergunta e condição; por julgamento; comparação pareada; acerto × certeza; erros com certeza alta e "Não sei"; tempo de leitura; tabela de acerto; distribuição por alternativa | Artigo 5.3; relatório (compreensão, confiança, erros atribuíveis ao resumo) |
+| Percepção | Likert R1–R5; R6; tabela de médias; respostas abertas R7/R8 | Artigo 5.3; relatório (M4, respostas abertas) |
+| Usabilidade | escores SUS; tarefa e suas partes | Relatório (M5) |
+| Fidelidade (RQ2) | classificação das afirmações; Partes B e C; concordância; afirmações problemáticas; omissões | Artigo 5.2; relatório (M6, fidelidade) |
 
 ## 8. Pendências antes da aplicação
 

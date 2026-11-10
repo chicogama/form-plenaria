@@ -4,71 +4,46 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Métricas da validação</title>
+  <title>Resultados da validação</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <style>
-    table.m { width: 100%; border-collapse: collapse; font-size: .95rem; }
-    table.m th, table.m td { border-bottom: 1px solid var(--borda); padding: 8px 6px; text-align: left; vertical-align: top; }
-    .atingida { color: var(--sucesso); font-weight: 600; }
-    .nao { color: var(--perigo); font-weight: 600; }
-    pre { white-space: pre-wrap; font-size: .8rem; background: var(--fundo); padding: 12px; border-radius: 8px; }
-  </style>
+  <link rel="stylesheet" href="css/painel.css">
+  <script src="js/escala.js"></script>
 </head>
-<body>
-  <header class="topo"><div class="topo-int"><span class="topo-titulo">Métricas da validação do plenarIA (somente agregados)</span></div></header>
-  <main>
-    <form class="cartao" id="f">
-      <label class="campo" for="chave">Chave das métricas (definida no Apps Script)</label>
-      <input id="chave" type="text" autocomplete="off">
-      <div class="acoes"><button type="submit">Carregar</button></div>
+<body class="painel">
+  <header class="topo">
+    <div class="topo-int">
+      <div class="topo-id">
+        <span class="topo-titulo">Resultados da validação</span>
+        <span class="topo-sub">TRE-AP · UNIFAP · uso do pesquisador</span>
+      </div>
+      <div class="tamanho" role="group" aria-label="Tamanho do texto">
+        <button type="button" data-escala-acao="-1" aria-label="Diminuir o texto">A−</button>
+        <span data-escala-valor aria-live="polite">100%</span>
+        <button type="button" data-escala-acao="1" aria-label="Aumentar o texto">A+</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="painel">
+    <form class="controle" id="controle">
+      <div class="controle-campo">
+        <label for="chave">Chave das métricas</label>
+        <input id="chave" type="password" autocomplete="off" spellcheck="false">
+      </div>
+      <button type="submit">Carregar resultados</button>
+      <button type="button" class="secundario" id="atualizar" hidden>Atualizar</button>
+      <p class="controle-status" id="status" aria-live="polite"></p>
     </form>
     <div id="saida"></div>
   </main>
-  <script src="js/config.js"></script>
-  <script>
-  (function () {
-    var f = document.getElementById("f"), saida = document.getElementById("saida");
-    function v(x, suf) { return x == null ? "—" : x + (suf || ""); }
-    function ms(o, suf) { return o && o.n ? v(o.media, suf) + " (DP " + o.dp + "; n=" + o.n + ")" : "—"; }
-    function meta(ok) { return ok == null ? "—" : ok ? '<span class="atingida">atingida</span>' : '<span class="nao">não atingida</span>'; }
 
-    f.addEventListener("submit", function (e) {
-      e.preventDefault();
-      if (!CONFIG.APPS_SCRIPT_URL) { saida.innerHTML = '<div class="alerta">APPS_SCRIPT_URL não configurado.</div>'; return; }
-      saida.innerHTML = '<div class="cartao">Carregando…</div>';
-      fetch(CONFIG.APPS_SCRIPT_URL + "?acao=metricas&chave=" + encodeURIComponent(document.getElementById("chave").value.trim()))
-        .then(function (r) { return r.json(); })
-        .then(function (j) {
-          if (!j.ok) throw new Error(j.erro);
-          var m = j.metricas, ac = m.acertoPorCondicao, fa = m.fidelidade.A, fb = m.fidelidade.B;
-          var codigos = Object.keys(m.avaliadores);
-          var pctSust = [fa.sustentadasPct, fb.sustentadasPct].filter(function (x) { return x != null; });
-          var m6 = pctSust.length ? (fa.resultadoDivergente + fb.resultadoDivergente === 0 && Math.min.apply(null, pctSust) >= 90) : null;
-          saida.innerHTML =
-            '<div class="cartao"><h2>Metas (relatório extensionista, Quadro 1)</h2><table class="m">' +
-            "<tr><th>Meta</th><th>Resultado</th><th>Situação</th></tr>" +
-            "<tr><td>M1 · ≥ 20 leigos e ≥ 2 avaliadores</td><td>" + m.participantes + " leigos; " + codigos.length + " avaliadores</td><td>" + meta(m.participantes >= 20 && codigos.length >= 2) + "</td></tr>" +
-            "<tr><td>M2 · acerto com plenarIA ≥ 70%</td><td>" + ms(ac.plenaria, "%") + "</td><td>" + meta(ac.plenaria.n ? ac.plenaria.media >= 70 : null) + "</td></tr>" +
-            "<tr><td>M3 · plenarIA &gt; registro oficial</td><td>plenarIA " + v(ac.plenaria.media, "%") + " × oficial " + v(ac.oficial.media, "%") + "</td><td>" + meta(ac.plenaria.n && ac.oficial.n ? ac.plenaria.media > ac.oficial.media : null) + "</td></tr>" +
-            "<tr><td>M4 · clareza (R1–R3) ≥ 4</td><td>" + ms(m.clarezaR1aR3) + "</td><td>" + meta(m.clarezaR1aR3.n ? m.clarezaR1aR3.media >= 4 : null) + "</td></tr>" +
-            "<tr><td>M5 · SUS ≥ 68</td><td>" + ms(m.sus) + "</td><td>" + meta(m.sus.n ? m.sus.media >= 68 : null) + "</td></tr>" +
-            "<tr><td>M6 · 0 resultado divergente e ≥ 90% sustentadas</td><td>A: " + v(fa.sustentadasPct, "%") + ", divergências " + fa.resultadoDivergente +
-            "<br>B: " + v(fb.sustentadasPct, "%") + ", divergências " + fb.resultadoDivergente + "</td><td>" + meta(m6) + "</td></tr>" +
-            "</table></div>" +
-            '<div class="cartao"><h2>Acerto por julgamento e condição</h2><table class="m">' +
-            Object.keys(m.acertoPorJulgamentoCondicao).map(function (k) { return "<tr><td>" + k.replace("_", " · ") + "</td><td>" + ms(m.acertoPorJulgamentoCondicao[k], "%") + "</td></tr>"; }).join("") +
-            "<tr><td>Erros com certeza 4–5</td><td>oficial " + m.errosComCertezaAlta.oficial + " · plenarIA " + m.errosComCertezaAlta.plenaria + "</td></tr>" +
-            "<tr><td>Tempo de leitura (s)</td><td>oficial " + ms(m.tempoLeituraSegundos.oficial) + "<br>plenarIA " + ms(m.tempoLeituraSegundos.plenaria) + "</td></tr>" +
-            "<tr><td>Participantes por versão</td><td>" + JSON.stringify(m.porVersao) + "</td></tr>" +
-            "</table></div>" +
-            '<div class="cartao"><h2>Dados completos (agregados)</h2><pre>' + JSON.stringify(m, null, 2).replace(/</g, "&lt;") + "</pre></div>";
-        })
-        .catch(function (err) { saida.innerHTML = '<div class="alerta">Erro: ' + String(err.message || err).replace(/</g, "&lt;") + "</div>"; });
-    });
-  })();
-  </script>
+  <div class="dica" id="dica" role="tooltip" hidden></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/dados.js"></script>
+  <script src="js/painel.js"></script>
 </body>
 </html>
