@@ -286,7 +286,16 @@
       "Você vai ler dois textos curtos sobre dois julgamentos e responder a algumas perguntas sobre cada um.</p>" +
       '<div class="aviso"><p><strong>Quem está sendo avaliado são os textos, e não você.</strong> Não existe resposta que prejudique você, e marcar "Não sei" ajuda tanto quanto acertar.</p>' +
       "<p style=\"margin:0\">A atividade leva de 30 a 40 minutos, e você pode parar a qualquer momento.</p></div>" +
-      "<p>Antes de começar, leia o termo de participação na próxima tela.</p></div>",
+      "</div>" +
+      // Apresentação neutra: não diz que o resumo é melhor nem descreve seu formato,
+      // para não induzir respostas nem permitir identificar o texto do plenarIA na leitura.
+      '<div class="cartao"><h2 style="margin-top:0">O que é o plenarIA</h2>' +
+      "<p>O plenarIA é uma ferramenta desenvolvida neste trabalho que usa inteligência artificial para transformar a gravação de uma sessão de julgamento do TRE-AP em um texto escrito: " +
+      "primeiro transcreve o que foi falado e, depois, produz um resumo em linguagem simples de cada processo julgado.</p>" +
+      "<p>Os resumos ficam disponíveis em um site público, onde qualquer pessoa pode consultar as sessões, ler os resumos e baixar a pauta.</p>" +
+      "<p style=\"margin:0\">Esta atividade serve para verificar se esses resumos ajudam as pessoas a entender o que o tribunal decidiu. " +
+      "Por isso, sua opinião sincera é o que mais importa, seja ela positiva ou negativa.</p></div>" +
+      '<p class="suave">Antes de começar, leia o termo de participação na próxima tela.</p>',
       function () { ir("tcle"); }, "Começar"
     );
   };
