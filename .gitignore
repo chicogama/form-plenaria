@@ -1,0 +1,8 @@
+# exportações locais com dados de participantes
+*.csv
+plenaria-copia-*.json
+.netlify/
+.vercel/
+.DS_Store
+Thumbs.db
+desktop.ini

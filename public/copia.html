@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Cópia local</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo"><div class="topo-int"><span class="topo-titulo">Cópia local de segurança (uso do aplicador)</span></div></header>
+  <main>
+    <div class="cartao">
+      <h1>Dados guardados neste aparelho</h1>
+      <p class="suave">Cada aparelho guarda uma cópia das respostas enviadas a partir dele e a fila do que ainda não chegou à planilha.</p>
+      <p id="resumo"></p>
+      <div class="acoes" style="justify-content:flex-start">
+        <button type="button" id="csv">Baixar respostas (CSV)</button>
+        <button type="button" id="json" class="secundario">Baixar tudo (JSON)</button>
+        <button type="button" id="reenviar" class="secundario">Reenviar pendentes</button>
+      </div>
+      <div id="msg"></div>
+    </div>
+    <div class="cartao">
+      <h2>Limpar este aparelho</h2>
+      <p class="suave">Use só depois de conferir que tudo está na planilha. A fila de pendentes pode conter nomes da lista de presença.</p>
+      <button type="button" id="limpar" class="secundario">Apagar cópia e pendentes</button>
+    </div>
+  </main>
+  <script src="js/config.js"></script>
+  <script>
+  (function () {
+    function ler(k) { try { return JSON.parse(localStorage.getItem(k)) || []; } catch (e) { return []; } }
+    var copia = ler("plenaria_copia"), pend = ler("plenaria_pendentes");
+    var resp = copia.filter(function (p) { return p.tipo === "resposta"; }).map(function (p) { return p.registro; });
+    var aval = [];
+    copia.filter(function (p) { return p.tipo === "avaliador"; }).forEach(function (p) { aval = aval.concat(p.linhas); });
+    document.getElementById("resumo").textContent =
+      resp.length + " resposta(s) de participantes, " + aval.length + " ficha(s) de avaliador, " + pend.length + " envio(s) pendente(s).";
+
+    function baixar(nome, conteudo, tipo) {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([conteudo], { type: tipo }));
+      a.download = nome;
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+    function csv(linhas) {
+      var cols = [];
+      linhas.forEach(function (l) { Object.keys(l).forEach(function (k) { if (cols.indexOf(k) < 0) cols.push(k); }); });
+      var q = function (v) { v = v == null ? "" : String(v); return /[";\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+      return "﻿" + [cols.join(";")].concat(linhas.map(function (l) { return cols.map(function (c) { return q(l[c]); }).join(";"); })).join("\n");
+    }
+    var hoje = new Date().toISOString().slice(0, 10);
+    document.getElementById("csv").onclick = function () {
+      if (resp.length) baixar("respostas-" + hoje + ".csv", csv(resp), "text/csv");
+      if (aval.length) baixar("avaliadores-" + hoje + ".csv", csv(aval), "text/csv");
+    };
+    document.getElementById("json").onclick = function () {
+      baixar("plenaria-copia-" + hoje + ".json", JSON.stringify({ copia: copia, pendentes: pend }, null, 2), "application/json");
+    };
+    document.getElementById("reenviar").onclick = function () {
+      var msg = document.getElementById("msg");
+      if (!CONFIG.APPS_SCRIPT_URL) { msg.innerHTML = '<div class="alerta">APPS_SCRIPT_URL não configurado.</div>'; return; }
+      var restantes = [];
+      pend.reduce(function (p, item) {
+        return p.then(function () {
+          return fetch(CONFIG.APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(item.payload) })
+            .then(function (r) { return r.json(); })
+            .then(function (j) { if (!j.ok) throw new Error(j.erro); })
+            .catch(function () { restantes.push(item); });
+        });
+      }, Promise.resolve()).then(function () {
+        localStorage.setItem("plenaria_pendentes", JSON.stringify(restantes));
+        msg.innerHTML = '<div class="' + (restantes.length ? "alerta" : "sucesso") + '">' +
+          (pend.length - restantes.length) + " enviado(s); " + restantes.length + " ainda pendente(s).</div>";
+        pend = restantes;
+      });
+    };
+    document.getElementById("limpar").onclick = function () {
+      if (!confirm("Apagar a cópia local e os envios pendentes deste aparelho?")) return;
+      localStorage.removeItem("plenaria_copia");
+      localStorage.removeItem("plenaria_pendentes");
+      location.reload();
+    };
+  })();
+  </script>
+</body>
+</html>

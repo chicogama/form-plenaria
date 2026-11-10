@@ -1,0 +1,141 @@
+:root {
+  --fundo: #f5f6f8;
+  --papel: #ffffff;
+  --texto: #1d2330;
+  --suave: #5b6475;
+  --borda: #d7dbe3;
+  --primaria: #1f4e8c;
+  --primaria-escura: #173b6a;
+  --destaque: #e8f0fb;
+  --erro: #b3261e;
+  --erro-fundo: #fdecea;
+  --ok: #1e6b3a;
+  --ok-fundo: #e7f4ec;
+  --raio: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font: 18px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.topo { background: var(--primaria); color: #fff; position: sticky; top: 0; z-index: 10; }
+.topo-int { max-width: 860px; margin: 0 auto; padding: 10px 16px; display: flex; flex-direction: column; }
+.topo-titulo { font-weight: 600; font-size: 16px; }
+.topo-sub { font-size: 13px; opacity: .85; }
+.progresso { height: 4px; background: rgba(255,255,255,.25); }
+#barra { height: 100%; width: 0; background: #fff; transition: width .3s; }
+
+main { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; outline: none; }
+main.largo { max-width: 1400px; }
+
+.cartao {
+  background: var(--papel);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+h1 { font-size: 1.5rem; line-height: 1.3; margin: 0 0 12px; }
+h2 { font-size: 1.2rem; margin: 24px 0 8px; }
+p { margin: 0 0 12px; }
+.suave { color: var(--suave); font-size: .92rem; }
+.aviso { background: var(--destaque); border-left: 4px solid var(--primaria); padding: 12px 16px; border-radius: 6px; margin: 16px 0; }
+.alerta { background: var(--erro-fundo); border-left: 4px solid var(--erro); padding: 12px 16px; border-radius: 6px; margin: 16px 0; }
+.sucesso { background: var(--ok-fundo); border-left: 4px solid var(--ok); padding: 12px 16px; border-radius: 6px; margin: 16px 0; }
+
+/* Perguntas */
+fieldset { border: 0; margin: 0 0 24px; padding: 0; min-width: 0; }
+legend { font-weight: 600; margin-bottom: 8px; padding: 0; }
+.pergunta { padding: 16px 0; border-top: 1px solid var(--borda); }
+.pergunta:first-of-type { border-top: 0; }
+.pergunta.faltando legend, .pergunta.faltando > .rotulo { color: var(--erro); }
+.pergunta.faltando::after { content: "Responda esta pergunta."; display: block; color: var(--erro); font-size: .9rem; margin-top: 4px; }
+
+.opcao {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 10px 12px; margin: 6px 0;
+  border: 1px solid var(--borda); border-radius: 8px; cursor: pointer;
+  background: var(--papel);
+}
+.opcao:hover { border-color: var(--primaria); }
+.opcao input { margin-top: 6px; width: 20px; height: 20px; flex: none; accent-color: var(--primaria); }
+.opcao:has(input:checked) { border-color: var(--primaria); background: var(--destaque); }
+
+.escala { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.escala .opcao { flex-direction: column; align-items: center; text-align: center; padding: 8px 4px; font-size: .85rem; gap: 4px; margin: 0; }
+.escala .opcao input { margin: 0; }
+.escala .num { font-weight: 700; font-size: 1rem; }
+
+.certeza { margin-top: 12px; padding: 12px; background: var(--fundo); border-radius: 8px; }
+.certeza .rotulo { font-size: .95rem; font-weight: 600; margin-bottom: 6px; }
+
+input[type=text], input[type=email], input[type=tel], textarea {
+  width: 100%; font: inherit; padding: 10px 12px;
+  border: 1px solid var(--borda); border-radius: 8px; background: #fff; color: var(--texto);
+}
+textarea { min-height: 96px; resize: vertical; }
+label.campo { display: block; font-weight: 600; margin: 16px 0 6px; }
+.outra { margin-top: 6px; }
+
+/* Botões */
+.acoes { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; margin-top: 24px; }
+button, .botao {
+  font: inherit; font-weight: 600; cursor: pointer;
+  padding: 12px 24px; border-radius: 8px; border: 1px solid var(--primaria);
+  background: var(--primaria); color: #fff; text-decoration: none; display: inline-block;
+}
+button:hover, .botao:hover { background: var(--primaria-escura); }
+button.secundario, .botao.secundario { background: #fff; color: var(--primaria); }
+button:disabled { opacity: .6; cursor: wait; }
+
+/* Material de leitura */
+.material {
+  background: #fff; border: 1px solid var(--borda); border-radius: var(--raio);
+  padding: 28px; font-size: 1.05rem;
+}
+.material .doc-centro { text-align: center; }
+.material .doc-ementa { font-weight: 600; }
+.material.oficial p { text-align: justify; hyphens: auto; }
+.material h3 { margin-top: 0; }
+.material h4 { margin: 20px 0 6px; }
+.etiqueta { display: inline-block; font-size: .85rem; font-weight: 600; color: var(--primaria); background: var(--destaque); padding: 2px 10px; border-radius: 99px; margin-bottom: 8px; }
+
+/* Avaliadores: resumo + acórdão lado a lado */
+.lado-a-lado { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 1100px) {
+  .lado-a-lado { grid-template-columns: 1fr 1fr; }
+  .lado-a-lado .painel { max-height: 80vh; overflow: auto; }
+}
+.pdf { width: 100%; height: 80vh; border: 1px solid var(--borda); border-radius: var(--raio); background: #fff; }
+
+table.afirmacoes { width: 100%; border-collapse: collapse; font-size: .95rem; }
+table.afirmacoes th, table.afirmacoes td { border-bottom: 1px solid var(--borda); padding: 10px 6px; vertical-align: top; }
+table.afirmacoes th { text-align: left; font-size: .85rem; color: var(--suave); }
+table.afirmacoes td.radio { text-align: center; width: 92px; }
+table.afirmacoes td.radio input { width: 20px; height: 20px; accent-color: var(--primaria); }
+table.afirmacoes tr.faltando td { background: var(--erro-fundo); }
+@media (max-width: 640px) {
+  table.afirmacoes thead { display: none; }
+  table.afirmacoes tr { display: block; padding: 8px 0; border-bottom: 1px solid var(--borda); }
+  table.afirmacoes td { display: block; border: 0; padding: 4px 0; }
+  table.afirmacoes td.radio { display: inline-block; width: auto; margin-right: 16px; }
+  table.afirmacoes td.radio::after { content: attr(data-rotulo); margin-left: 6px; font-size: .85rem; }
+}
+
+.exemplo { font-size: .95rem; }
+.exemplo dt { font-weight: 600; margin-top: 8px; }
+.exemplo dd { margin: 0 0 0 16px; }
+
+@media (max-width: 640px) {
+  body { font-size: 17px; }
+  .cartao, .material { padding: 16px; }
+  .escala .opcao { font-size: .7rem; }
+}
