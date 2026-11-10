@@ -6,3 +6,8 @@ plenaria-copia-*.json
 .DS_Store
 Thumbs.db
 desktop.ini
+.impeccable/
+.gemini/
+.codex/
+PRODUCT.md
+DESIGN.md

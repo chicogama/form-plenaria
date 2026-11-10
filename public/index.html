@@ -4,17 +4,35 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#ffffff">
   <title>Avaliação de textos sobre julgamentos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/escala.js"></script>
 </head>
 <body>
   <header class="topo">
     <div class="topo-int">
-      <span class="topo-titulo">Avaliação de textos sobre julgamentos do TRE-AP</span>
-      <span class="topo-sub">UNIFAP · Especialização em Projetos em Inteligência Artificial</span>
+      <div class="topo-id">
+        <span class="topo-titulo">Avaliação de textos sobre julgamentos</span>
+        <span class="topo-sub">TRE-AP · UNIFAP</span>
+      </div>
+      <div class="tamanho" role="group" aria-label="Tamanho do texto">
+        <button type="button" data-escala-acao="-1" aria-label="Diminuir o texto">A−</button>
+        <span data-escala-valor aria-live="polite">100%</span>
+        <button type="button" data-escala-acao="1" aria-label="Aumentar o texto">A+</button>
+      </div>
     </div>
-    <div class="progresso" aria-hidden="true"><div id="barra"></div></div>
   </header>
+
+  <nav class="etapas" aria-label="Progresso">
+    <div class="etapas-int">
+      <div class="etapas-rotulo"><span id="etapa-nome"></span><span id="etapa-num" class="mono"></span></div>
+      <ol id="trilho" aria-hidden="true"></ol>
+    </div>
+  </nav>
 
   <main id="app" tabindex="-1">
     <noscript><p>Esta página precisa de JavaScript ativado.</p></noscript>

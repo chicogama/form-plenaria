@@ -67,6 +67,7 @@ Teste, **de dentro da rede do TRE**, se abrem: o endereço publicado, `script.go
 | Aplicação online | `https://SEU-SITE/?modalidade=online` |
 | Teste piloto (marca como piloto, IDs `T01`…, não mexe no rodízio) | `https://SEU-SITE/?piloto=1` |
 | Convite direto para avaliador | `https://SEU-SITE/?rota=avaliador` |
+| Fora da rede do TRE (sem tarefa no site e sem SUS) | `https://SEU-SITE/?semtarefa=1` (combina com os outros, ex.: `?modalidade=online&semtarefa=1`) |
 | Forçar uma versão (emergência) | `https://SEU-SITE/?versao=3` |
 | Cópia local / reenvio | `https://SEU-SITE/copia.html` |
 | Métricas | `https://SEU-SITE/metricas.html` |
@@ -105,7 +106,8 @@ omissões. Uma linha por avaliador × julgamento na aba `avaliadores`.
   ordem em `js/dados.js`. **Se reordenar alternativas, atualize `Gabarito.gs` e rode `configurar()`.**
 - `A_*`/`B_*` referem-se sempre ao Julgamento A (58ª) e B (61ª), independentemente da ordem;
   `ORDEM` indica qual foi lido primeiro (`A-B` ou `B-A`).
-- `TAREFA`: `sim`, `parcial`, `nao` ou `indisponivel` (site não abriu; SUS não aplicada).
+- `TAREFA`: `sim`, `parcial`, `nao`, `indisponivel` (site não abriu; SUS não aplicada), `pulada` (participante clicou em "Pular esta etapa"; SUS não aplicada) ou `nao_aplicada` (link com `?semtarefa=1`).
+- SUS em branco com `TAREFA` = `sim`/`parcial`/`nao`: o participante fez a tarefa e clicou em "Pular este questionário". A média da SUS considera só quem respondeu.
 - `SUS_ESCORE`: já calculado (0–100).
 
 ## 7. Métricas

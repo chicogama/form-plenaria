@@ -14,7 +14,9 @@
   var D = window.DADOS;
   var C = window.CONFIG;
   var app = document.getElementById("app");
-  var barra = document.getElementById("barra");
+  var trilho = document.getElementById("trilho");
+  var etapaNome = document.getElementById("etapa-nome");
+  var etapaNum = document.getElementById("etapa-num");
   var params = new URLSearchParams(location.search);
 
   var CH_ESTADO = "plenaria_estado";
@@ -50,6 +52,8 @@
       passo: "boasvindas",
       modalidade: params.get("piloto") === "1" ? "piloto" : (params.get("modalidade") || "presencial"),
       rotaForcada: params.get("rota") === "avaliador",
+      // ?semtarefa=1: aplicação fora da rede do TRE; a tarefa no site e a SUS não aparecem.
+      semTarefa: params.get("semtarefa") === "1",
       inicio: new Date().toISOString(),
       r: {},
       versao: null,
@@ -155,11 +159,18 @@
 
   function escala(nome, legenda, rotulos, classe) {
     rotulos = rotulos || D.escala;
-    var html = '<fieldset class="pergunta ' + (classe || "") + '" data-obrig data-grupo="' + nome + '"><legend>' + legenda + '</legend><div class="escala">';
+    // Rótulos completos (Discordo totalmente… Concordo totalmente) viram lista vertical no celular;
+    // rótulos só nas pontas (Nenhuma … Total) ficam sempre em linha.
+    var compacta = rotulos.some(function (r) { return !r; });
+    var html = '<fieldset class="pergunta ' + (classe || "") + '" data-obrig data-grupo="' + nome + '"><legend>' + legenda + '</legend><div class="escala' + (compacta ? " compacta" : "") + '">';
     for (var i = 1; i <= 5; i++) {
-      html += '<label class="opcao"><input type="radio" name="' + nome + '" value="' + i + '"><span class="num">' + i + "</span><span>" + esc(rotulos[i - 1] || "") + "</span></label>";
+      html += '<label class="opcao"><input type="radio" name="' + nome + '" value="' + i + '"><span class="num">' + i + '</span><span class="rot">' + esc(rotulos[i - 1] || "") + "</span></label>";
     }
-    return html + "</div></fieldset>";
+    html += "</div>";
+    if (compacta) {
+      html += '<div class="escala-ancoras" aria-hidden="true"><span>1 · ' + esc(rotulos[0]) + "</span><span>5 · " + esc(rotulos[4]) + "</span></div>";
+    }
+    return html + "</fieldset>";
   }
 
   function texto(nome, legenda, obrig, tipo) {
@@ -195,12 +206,16 @@
     return o;
   }
 
-  function pagina(html, aoEnviar, rotuloBotao, largo) {
+  // pular (opcional): { rotulo, acao } — botão secundário que avança sem validar as respostas.
+  function pagina(html, aoEnviar, rotuloBotao, largo, pular) {
     app.classList.toggle("largo", !!largo);
     app.innerHTML = '<form id="f" novalidate>' + html +
-      (aoEnviar ? '<div class="acoes"><button type="submit">' + (rotuloBotao || "Continuar") + "</button></div>" : "") +
+      (aoEnviar ? '<div class="acoes">' +
+        (pular ? '<button type="button" class="secundario" id="pular">' + pular.rotulo + "</button>" : "") +
+        '<button type="submit">' + (rotuloBotao || "Continuar") + "</button></div>" : "") +
       "</form>";
     var form = document.getElementById("f");
+    if (pular) document.getElementById("pular").addEventListener("click", pular.acao);
     form.addEventListener("change", function (e) {
       var g = e.target.closest("[data-obrig]");
       if (g) g.classList.remove("faltando");
@@ -226,10 +241,26 @@
     var chave = S.passo;
     if (chave === "leitura" || chave === "perguntas") chave += S.leituraIdx;
     if (chave === "av_aval") chave += S.av.idx;
-    var lista = S.passo.indexOf("av_") === 0 ? ORDEM_AV : ORDEM_LEIGO;
+    var lista = S.passo.indexOf("av_") === 0 ? ORDEM_AV
+      : S.semTarefa ? ORDEM_LEIGO.filter(function (k) { return k !== "tarefa" && k !== "sus"; }) : ORDEM_LEIGO;
     var i = lista.indexOf(chave);
-    barra.style.width = (i < 0 ? 100 : Math.round(i / (lista.length - 1) * 100)) + "%";
+    if (i < 0) i = lista.length - 1;
+    var segs = "";
+    for (var k = 0; k < lista.length; k++) {
+      segs += '<li class="' + (k < i ? "feito" : k === i ? "atual" : "") + '"></li>';
+    }
+    trilho.innerHTML = segs;
+    etapaNome.textContent = NOMES_ETAPA[chave] || NOMES_ETAPA.fim;
+    etapaNum.textContent = (i + 1) + "/" + lista.length;
   }
+
+  var NOMES_ETAPA = {
+    boasvindas: "Boas-vindas", tcle: "Termo de consentimento", contato: "Lista de presença", perfil: "Perfil",
+    instrucoes: "Instruções", leitura0: "Leitura do texto 1", perguntas0: "Perguntas do texto 1",
+    leitura1: "Leitura do texto 2", perguntas1: "Perguntas do texto 2", tarefa: "Tarefa no site",
+    sus: "Usabilidade do site", percepcao: "Sua opinião", av_intro: "Orientações",
+    av_aval0: "Avaliação do resumo 1", av_aval1: "Avaliação do resumo 2", fim: "Conclusão"
+  };
 
   function ir(passo) {
     S.passo = passo;
@@ -286,15 +317,14 @@
       "Você vai ler dois textos curtos sobre dois julgamentos e responder a algumas perguntas sobre cada um.</p>" +
       '<div class="aviso"><p><strong>Quem está sendo avaliado são os textos, e não você.</strong> Não existe resposta que prejudique você, e marcar "Não sei" ajuda tanto quanto acertar.</p>' +
       "<p style=\"margin:0\">A atividade leva de 30 a 40 minutos, e você pode parar a qualquer momento.</p></div>" +
-      "</div>" +
       // Apresentação neutra: não diz que o resumo é melhor nem descreve seu formato,
       // para não induzir respostas nem permitir identificar o texto do plenarIA na leitura.
-      '<div class="cartao"><h2 style="margin-top:0">O que é o plenarIA</h2>' +
+      '<section class="secao"><h2>O que é o plenarIA</h2>' +
       "<p>O plenarIA é uma ferramenta desenvolvida neste trabalho que usa inteligência artificial para transformar a gravação de uma sessão de julgamento do TRE-AP em um texto escrito: " +
       "primeiro transcreve o que foi falado e, depois, produz um resumo em linguagem simples de cada processo julgado.</p>" +
       "<p>Os resumos ficam disponíveis em um site público, onde qualquer pessoa pode consultar as sessões, ler os resumos e baixar a pauta.</p>" +
       "<p style=\"margin:0\">Esta atividade serve para verificar se esses resumos ajudam as pessoas a entender o que o tribunal decidiu. " +
-      "Por isso, sua opinião sincera é o que mais importa, seja ela positiva ou negativa.</p></div>" +
+      "Por isso, sua opinião sincera é o que mais importa, seja ela positiva ou negativa.</p></section></div>" +
       '<p class="suave">Antes de começar, leia o termo de participação na próxima tela.</p>',
       function () { ir("tcle"); }, "Começar"
     );
@@ -310,8 +340,8 @@
       "<p><strong>Riscos e benefícios:</strong> o risco é mínimo, limitado a cansaço ou desconforto ao responder. Se isso acontecer, você pode fazer uma pausa ou encerrar a participação. O benefício é contribuir para que as decisões da Justiça Eleitoral sejam mais fáceis de entender para a população.</p>" +
       "<p><strong>Sigilo:</strong> suas respostas serão analisadas sem identificação. Seu nome, telefone e e-mail serão guardados apenas na lista de presença, exigida pela universidade, em local separado das respostas, e não serão associados a elas em nenhuma publicação.</p>" +
       "<p><strong>Contato:</strong> Josemar Gama, " + esc(C.CONTATO_PESQUISADOR) + "; Prof. Dr. Julio Cezar Costa Furtado, " + esc(C.CONTATO_ORIENTADOR) + ".</p>" +
-      "<p class=\"suave\">O aceite abaixo substitui a assinatura em papel.</p></div>" +
-      '<div class="cartao">' +
+      "<p class=\"suave\">O aceite abaixo substitui a assinatura em papel.</p>" +
+      '<section class="secao">' +
       radios("ACEITE", "Declaração de consentimento", [
         "Li as informações acima, tive a oportunidade de fazer perguntas e aceito participar desta atividade.",
         "Não aceito participar."
@@ -320,7 +350,7 @@
         "Autorizo o uso de fotografias em que eu apareça, tiradas durante a atividade, exclusivamente no relatório acadêmico e em publicações científicas relacionadas a este trabalho.",
         "Não autorizo o uso da minha imagem."
       ], { valores: ["autorizo", "nao_autorizo"] }) +
-      "</div>",
+      "</section></div>",
       function (v) {
         if (v.ACEITE !== "sim") { ir("recusa"); return; }
         S.r.IMAGEM = v.IMAGEM;
@@ -397,8 +427,9 @@
     var J = D.julgamentos[l.j];
     if (!S.t0) { S.t0 = Date.now(); salvar(); }
     pagina(
-      '<span class="etiqueta">Texto ' + (S.leituraIdx + 1) + " de 2 · " + J.rotulo + "</span>" +
-      '<article class="material ' + l.material + '">' + J[l.material] + "</article>",
+      '<article class="material folha ' + l.material + '">' +
+      '<header class="folha-cab"><span>Texto ' + (S.leituraIdx + 1) + " de 2</span><span>" + J.rotulo + "</span></header>" +
+      '<div class="folha-corpo">' + J[l.material] + "</div></article>",
       function () {
         if (!confirm("Depois de continuar, não será possível voltar a este texto. Deseja ir para as perguntas?")) return;
         S.r[l.j + "_TEMPO"] = Math.round((Date.now() - S.t0) / 1000);
@@ -411,8 +442,8 @@
   PASSOS.perguntas = function () {
     var l = leituraAtual();
     var J = D.julgamentos[l.j];
-    var html = '<div class="cartao"><span class="etiqueta">Perguntas sobre o ' + J.rotulo + "</span>" +
-      "<h1>O que você entendeu?</h1>" +
+    var html = '<div class="cartao"><h1>O que você entendeu?</h1>' +
+      '<p class="contexto">Perguntas sobre o ' + J.rotulo + "</p>" +
       '<p class="suave">Responda sem consultar o texto. Marque apenas uma opção. Se não souber, marque "Não sei": isso é tão útil quanto uma resposta.</p>';
     D.perguntas[l.j].forEach(function (q) {
       var base = q.comum ? D.comuns[q.comum] : q;
@@ -428,7 +459,12 @@
         S.leituraIdx = 1;
         ir("leitura");
       } else {
-        ir("tarefa");
+        if (S.semTarefa) {
+          S.r.TAREFA = "nao_aplicada";
+          ir("percepcao");
+        } else {
+          ir("tarefa");
+        }
       }
     });
   };
@@ -442,14 +478,14 @@
       "<p>O <strong>" + ordinal + " texto</strong> que você leu (" + J.rotulo + ") era um resumo produzido pelo <strong>plenarIA</strong>. O outro era o registro oficial do tribunal.</p>" +
       '<div class="aviso"><p><strong>Tarefa:</strong> no site do plenarIA, encontre a sessão desse julgamento — a <strong>' + J.sessao + "</strong> —, abra o resumo e baixe a pauta.</p>" +
       '<p style="margin:0">O site abrirá em outra aba. Quando terminar (ou se não conseguir), volte para esta aba.</p></div>' +
-      '<p><a class="botao secundario" href="' + D.plenariaInicio + '" target="_blank" rel="noopener">Abrir o site do plenarIA</a></p></div>' +
-      '<div class="cartao">' +
+      '<p><a class="botao secundario" href="' + D.plenariaInicio + '" target="_blank" rel="noopener">Abrir o site do plenarIA</a></p>' +
+      '<section class="secao">' +
       radios("SITE", "O site do plenarIA abriu?", ["Sim", "Não, o site não abriu"], { valores: ["sim", "nao"] }) +
       '<div id="partes" hidden>' +
       radios("TAREFA_LOCALIZAR", "Você conseguiu encontrar a sessão?", ["Sim", "Não"], { valores: ["sim", "nao"] }) +
       radios("TAREFA_RESUMO", "Você conseguiu abrir o resumo?", ["Sim", "Não"], { valores: ["sim", "nao"] }) +
       radios("TAREFA_PAUTA", "Você conseguiu baixar a pauta?", ["Sim", "Não"], { valores: ["sim", "nao"] }) +
-      "</div></div>",
+      "</div></section></div>",
       function (v) {
         if (v.SITE === "nao") {
           S.r.TAREFA = "indisponivel";
@@ -462,6 +498,14 @@
         partes.forEach(function (k) { S.r[k] = v[k]; if (v[k] === "sim") sims++; });
         S.r.TAREFA = sims === 3 ? "sim" : sims === 0 ? "nao" : "parcial";
         ir("sus");
+      }, null, false, {
+        // Pula a tarefa e, com ela, a SUS (que só faz sentido depois de usar o site).
+        rotulo: "Pular esta etapa",
+        acao: function () {
+          S.r.TAREFA = "pulada";
+          ["TAREFA_LOCALIZAR", "TAREFA_RESUMO", "TAREFA_PAUTA"].forEach(function (k) { S.r[k] = ""; });
+          ir("percepcao");
+        }
       }
     );
     form.addEventListener("change", function (e) {
@@ -482,6 +526,14 @@
       }
       S.r.SUS_ESCORE = soma * 2.5;
       ir("percepcao");
+    }, null, false, {
+      rotulo: "Pular este questionário",
+      acao: function () {
+        // SUS em branco; TAREFA mantém o que foi declarado na tela anterior.
+        for (var i = 1; i <= 10; i++) S.r["SUS" + i] = "";
+        S.r.SUS_ESCORE = "";
+        ir("percepcao");
+      }
     });
   };
 
@@ -554,7 +606,7 @@
       ? "<p>Por favor, não comente as perguntas com outras pessoas que ainda vão participar. As respostas certas só serão divulgadas depois do fim da atividade.</p>"
       : "<p>Sua avaliação vai ajudar a medir a fidelidade dos resumos.</p>";
     app.classList.remove("largo");
-    app.innerHTML = '<div class="cartao"><h1>Muito obrigado pela participação!</h1>' + status + extra + "</div>" + botaoNovo();
+    app.innerHTML = '<div class="cartao fim' + (C.APPS_SCRIPT_URL && restantes === 0 ? " ok" : "") + '"><h1>Muito obrigado pela participação!</h1>' + status + extra + "</div>" + botaoNovo();
     ligarBotaoNovo();
     var r = document.getElementById("reenviar");
     if (r) r.addEventListener("click", function () {
@@ -576,11 +628,11 @@
       "<dt>Sustentada</dt><dd>Consta do acórdão. Ex.: “A decisão foi unânime”, quando o acórdão registra “por unanimidade”.</dd>" +
       "<dt>Não sustentada</dt><dd>Não consta do acórdão, nem para confirmar nem para negar. Ex.: “O relator destacou a gravidade dos fatos”, sem registro disso no acórdão.</dd>" +
       "<dt>Contraditória</dt><dd>Contraria o acórdão. Ex.: “O tribunal deu provimento aos embargos”, quando o acórdão os rejeitou; ou um nome, número ou classe processual errados.</dd>" +
-      "</dl></div></div>" +
-      '<div class="cartao">' +
+      "</dl></div>" +
+      '<section class="secao">' +
       texto("CODIGO", "Código de avaliador (recebido do aplicador; deixe em branco se não recebeu)", false) +
       radios("FORMACAO", "Formação", D.formacoes, { outra: "Outra" }) +
-      "</div>";
+      "</section></div>";
     pagina(html, function (v) {
       S.av.codigo = (v.CODIGO || "").toUpperCase() || ("AV-" + S.uuid.slice(0, 4).toUpperCase());
       S.av.formacao = v.FORMACAO;
@@ -599,35 +651,34 @@
     var linhas = D.afirmacoes[j].map(function (a, i) {
       var nome = "AF" + (i < 9 ? "0" : "") + (i + 1);
       var cel = function (v, rot) {
-        return '<td class="radio" data-rotulo="' + rot + '"><input type="radio" name="' + nome + '" value="' + v + '" aria-label="' + rot + '"></td>';
+        return '<td class="radio"><label><input type="radio" name="' + nome + '" value="' + v + '"><span class="rot-cel">' + rot + "</span></label></td>";
       };
       return '<tr data-obrig data-grupo="' + nome + '"><td>' + (i + 1) + "</td><td>" + esc(a) + "</td>" +
         cel("Sustentada", "Sustentada") + cel("Não sustentada", "Não sustentada") + cel("Contraditória", "Contraditória") + "</tr>";
     }).join("");
 
     var html =
-      '<div class="cartao"><span class="etiqueta">Resumo ' + (S.av.idx + 1) + " de 2 · " + J.rotulo + "</span>" +
-      "<h1>" + J.sessao + "</h1>" +
+      '<div class="cartao"><h1>' + J.sessao + "</h1>" +
+      '<p class="contexto">Resumo ' + (S.av.idx + 1) + " de 2 · " + J.rotulo + "</p>" +
       '<p class="suave">Leia o resumo e o acórdão. Você pode consultar os dois enquanto responde.</p></div>' +
       '<div class="lado-a-lado">' +
-      '<div class="painel"><span class="etiqueta">Resumo do plenarIA</span><article class="material plenaria">' + J.plenaria + "</article></div>" +
-      '<div class="painel"><span class="etiqueta">' + J.acordaoNome + "</span> " +
-      '<a href="' + J.acordaoPdf + '" target="_blank" rel="noopener">abrir em outra aba</a>' +
+      '<div class="painel"><div class="painel-cab"><span>Resumo do plenarIA</span></div><article class="material plenaria"><div class="folha-corpo">' + J.plenaria + "</div></article></div>" +
+      '<div class="painel"><div class="painel-cab"><span>' + J.acordaoNome + "</span>" +
+      '<a href="' + J.acordaoPdf + '" target="_blank" rel="noopener">abrir em outra aba</a></div>' +
       '<iframe class="pdf" src="' + J.acordaoPdf + '" title="' + J.acordaoNome + '"></iframe></div>' +
       "</div>" +
-      '<div class="cartao"><h2>Parte A — Afirmações do resumo</h2>' +
+      '<div class="cartao cartao-ficha"><h2>Parte A — Afirmações do resumo</h2>' +
       '<p class="suave">Classifique cada afirmação de fato extraída do resumo, comparando com o acórdão.</p>' +
       '<table class="afirmacoes"><thead><tr><th>Nº</th><th>Afirmação do resumo</th><th>Sustentada</th><th>Não sustentada</th><th>Contraditória</th></tr></thead><tbody>' +
       linhas + "</tbody></table>" +
       texto("AF_EXTRA", "Alguma afirmação do resumo ficou de fora da lista? Escreva-a e classifique-a (opcional).", false, "area") +
-      "</div>" +
-      '<div class="cartao"><h2>Parte B — Elementos essenciais</h2>' +
+      '<section class="secao"><h2>Parte B — Elementos essenciais</h2>' +
       D.elementos.map(function (e) { return radios(e.id, e.texto, e.opcoes); }).join("") +
-      "</div>" +
-      '<div class="cartao"><h2>Parte C — Linguagem e omissões</h2>' +
+      "</section>" +
+      '<section class="secao"><h2>Parte C — Linguagem e omissões</h2>' +
       D.parteC.map(function (t, i) { return escala("C" + (i + 1), (i + 1) + ". " + t); }).join("") +
       texto("OMISSOES", "Omissões relevantes (informação essencial do julgamento ausente do resumo). Se não houver, escreva \"nenhuma\".", true, "area") +
-      "</div>";
+      "</section></div>";
 
     pagina(html, function (v) {
       v.TEMPO = Math.round((Date.now() - S.t0) / 1000);
