@@ -6,7 +6,7 @@
  * respostas ficam só neste navegador (exportáveis em copia.html). Útil para testar.
  */
 window.CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzjcJeo7_M_UzjcE1mulUhxVViJhV99ENvzQdpGS5Yd8nSqXwjWQvt6CGHA1QcMyYgq_Q/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxmudWYHNlmtlwNgasx5yJeN24HF5m92xvRjK2l9llyNyLCWF5bNHnbeqgUdjOMRgS-xA/exec",
 
   CONTATO_PESQUISADOR: "josemargama7@gmail.com",
   CONTATO_ORIENTADOR: "furtado@unifap.br",
