@@ -316,7 +316,7 @@
       "<p>Estamos testando formas de explicar para a população o que acontece nos julgamentos do Tribunal Regional Eleitoral do Amapá. " +
       "Você vai ler dois textos curtos sobre dois julgamentos e responder a algumas perguntas sobre cada um.</p>" +
       '<div class="aviso"><p><strong>Quem está sendo avaliado são os textos, e não você.</strong> Não existe resposta que prejudique você, e marcar "Não sei" ajuda tanto quanto acertar.</p>' +
-      "<p style=\"margin:0\">A atividade leva de 30 a 40 minutos, e você pode parar a qualquer momento.</p></div>" +
+      "<p style=\"margin:0\">A atividade leva no máximo 15 minutos, e você pode parar a qualquer momento.</p></div>" +
       // Apresentação neutra: não diz que o resumo é melhor nem descreve seu formato,
       // para não induzir respostas nem permitir identificar o texto do plenarIA na leitura.
       '<section class="secao"><h2>O que é o plenarIA</h2>' +
@@ -334,7 +334,7 @@
     pagina(
       '<div class="cartao"><h1>Termo de Consentimento Livre e Esclarecido</h1>' +
       "<p>Você está sendo convidado(a) a participar da atividade de validação do plenarIA, ferramenta que produz resumos em linguagem simples dos julgamentos realizados nas sessões do Tribunal Regional Eleitoral do Amapá (TRE-AP). A atividade faz parte do Trabalho de Conclusão de Curso da Especialização em Projetos em Inteligência Artificial da Universidade Federal do Amapá (UNIFAP).</p>" +
-      "<p><strong>O que você vai fazer:</strong> ler dois textos curtos sobre julgamentos do tribunal, responder a algumas perguntas sobre eles e dar sua opinião sobre os textos. Se você tiver formação jurídica ou trabalhar na área judicial, a sua tarefa será outra: conferir se os resumos correspondem ao que foi julgado. A atividade dura entre 30 e 40 minutos.</p>" +
+      "<p><strong>O que você vai fazer:</strong> ler dois textos curtos sobre julgamentos do tribunal, responder a algumas perguntas sobre eles e dar sua opinião sobre os textos. Se você tiver formação jurídica ou trabalhar na área judicial, a sua tarefa será outra: conferir se os resumos correspondem ao que foi julgado. A atividade dura no máximo 15 minutos.</p>" +
       "<p><strong>O que está sendo avaliado:</strong> os textos e a ferramenta, e não você. Não existe resposta que prejudique você.</p>" +
       "<p><strong>Participação voluntária:</strong> você pode desistir a qualquer momento, sem precisar explicar o motivo e sem nenhum prejuízo. Não há pagamento nem custo para participar.</p>" +
       "<p><strong>Riscos e benefícios:</strong> o risco é mínimo, limitado a cansaço ou desconforto ao responder. Se isso acontecer, você pode fazer uma pausa ou encerrar a participação. O benefício é contribuir para que as decisões da Justiça Eleitoral sejam mais fáceis de entender para a população.</p>" +
