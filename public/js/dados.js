@@ -16,6 +16,7 @@ window.DADOS = {
     A: {
       rotulo: "Julgamento A",
       sessao: "58ª Sessão Judiciária Ordinária, de 5 de agosto de 2026",
+      videoUrl: "https://www.youtube.com/watch?v=gL-oEz9Vpy0",
       plenariaUrl: "https://plenaria.tre-ap.jus.br/sessoes/d9e63c64-27ce-42ba-bf34-6a5600d68360?mes=2026-08",
       acordaoPdf: "materiais/acordao-8868-2026.pdf",
       acordaoNome: "Acórdão nº 8868/2026",
@@ -84,6 +85,7 @@ RELATORA: JUÍZA PAOLA SANTOS</p>
     B: {
       rotulo: "Julgamento B",
       sessao: "61ª Sessão Judiciária Ordinária, de 13 de agosto de 2026",
+      videoUrl: "https://www.youtube.com/watch?v=Mz-riKTln7U",
       plenariaUrl: "https://plenaria.tre-ap.jus.br/sessoes/0d1b4338-ce62-4dca-8dad-23a9dff75a50?mes=2026-08",
       acordaoPdf: "materiais/acordao-8873-2026.pdf",
       acordaoNome: "Acórdão nº 8873/2026",

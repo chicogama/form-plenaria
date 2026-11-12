@@ -304,6 +304,31 @@
 
   var PASSOS = {};
 
+  // Origem dos resumos: o vídeo da sessão no YouTube, segmentado, transcrito e diarizado.
+  var ETAPAS_PIPELINE =
+    '<ol class="etapas">' +
+    "<li><strong>Vídeo da sessão.</strong> O ponto de partida é a gravação da sessão judiciária ordinária, publicada no YouTube.</li>" +
+    "<li><strong>Segmentação.</strong> O áudio é dividido em trechos, separando o julgamento de cada processo.</li>" +
+    "<li><strong>Transcrição.</strong> Cada trecho é convertido em texto escrito.</li>" +
+    "<li><strong>Diarização.</strong> Cada fala é atribuída a quem falou (presidente, relator, demais juízes, procurador, advogados).</li>" +
+    "<li><strong>Resumo.</strong> A partir dessa transcrição, a inteligência artificial escreve um resumo em linguagem simples de cada processo.</li>" +
+    "</ol>";
+
+  var ICONE_PLAY = '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 5.14v13.72a1 1 0 0 0 1.52.85l11.1-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14z"/></svg>';
+
+  function cartaoVideo(j) {
+    var J = D.julgamentos[j];
+    return '<a class="cartao-video" href="' + J.videoUrl + '" target="_blank" rel="noopener">' +
+      '<span class="cartao-video-play">' + ICONE_PLAY + "</span>" +
+      '<span class="cartao-video-texto"><span class="cartao-video-titulo">' + J.sessao + "</span>" +
+      '<span class="cartao-video-acao">Assistir ao vídeo da sessão no YouTube ↗</span></span></a>';
+  }
+
+  function blocoVideos(js, titulo, intro) {
+    return '<section class="secao videos"><h2>' + titulo + "</h2>" + (intro ? "<p>" + intro + "</p>" : "") +
+      '<div class="lista-videos">' + js.map(cartaoVideo).join("") + "</div></section>";
+  }
+
   PASSOS.boasvindas = function () {
     var piloto = S.modalidade === "piloto"
       ? '<div class="alerta"><strong>Teste piloto.</strong> Estas respostas são marcadas como piloto e não entram nos resultados.</div>' : "";
@@ -320,8 +345,10 @@
       // Apresentação neutra: não diz que o resumo é melhor nem descreve seu formato,
       // para não induzir respostas nem permitir identificar o texto do plenarIA na leitura.
       '<section class="secao"><h2>O que é o plenarIA</h2>' +
-      "<p>O plenarIA é uma ferramenta desenvolvida neste trabalho que usa inteligência artificial para transformar a gravação de uma sessão de julgamento do TRE-AP em um texto escrito: " +
-      "primeiro transcreve o que foi falado e, depois, produz um resumo em linguagem simples de cada processo julgado.</p>" +
+      "<p>O plenarIA é uma ferramenta desenvolvida neste trabalho que usa inteligência artificial para transformar o <strong>vídeo de uma sessão judiciária ordinária</strong> do TRE-AP em um resumo escrito de cada processo julgado. O caminho é este:</p>" +
+      ETAPAS_PIPELINE +
+      "<p>Nesta atividade, os resumos foram gerados a partir dos vídeos da <strong>58ª Sessão Judiciária Ordinária (5/8/2026)</strong> e da <strong>61ª Sessão Judiciária Ordinária (13/8/2026)</strong>. " +
+      "Os links para os dois vídeos aparecem ao final da atividade, depois das perguntas.</p>" +
       "<p>Os resumos ficam disponíveis em um site público, onde qualquer pessoa pode consultar as sessões, ler os resumos e baixar a pauta.</p>" +
       "<p style=\"margin:0\">Esta atividade serve para verificar se esses resumos ajudam as pessoas a entender o que o tribunal decidiu. " +
       "Por isso, sua opinião sincera é o que mais importa, seja ela positiva ou negativa.</p></section></div>" +
@@ -541,7 +568,10 @@
     var p = julgamentoPlenaria();
     var html = '<div class="cartao"><h1>Sua opinião sobre o resumo do plenarIA</h1>' +
       "<p>As afirmações abaixo se referem ao <strong>resumo do plenarIA</strong> que você leu (o " + (p.idx === 0 ? "primeiro" : "segundo") +
-      " texto, sobre o " + D.julgamentos[p.j].rotulo + "). Indique o quanto concorda com cada uma.</p>";
+      " texto, sobre o " + D.julgamentos[p.j].rotulo + "). Indique o quanto concorda com cada uma.</p>" +
+      '<div class="aviso"><p>Esse resumo foi gerado pelo plenarIA a partir do <strong>vídeo da ' + D.julgamentos[p.j].sessao +
+      "</strong>: o áudio foi segmentado, transcrito e diarizado (cada fala atribuída a quem falou) antes de a IA escrever o resumo.</p>" +
+      cartaoVideo(p.j) + "</div>";
     D.percepcao.forEach(function (t, i) { html += escala("R" + (i + 1), (i + 1) + ". " + t); });
     html += radios("R6", "6. " + D.r6.texto, D.r6.opcoes) +
       texto("R7", "7. " + D.r7 + " (opcional)", false, "area") +
@@ -605,6 +635,8 @@
     var extra = tipo === "resposta"
       ? "<p>Por favor, não comente as perguntas com outras pessoas que ainda vão participar. As respostas certas só serão divulgadas depois do fim da atividade.</p>"
       : "<p>Sua avaliação vai ajudar a medir a fidelidade dos resumos.</p>";
+    extra += blocoVideos(["A", "B"], "Assista às sessões originais",
+      "Os resumos do plenarIA foram gerados a partir destes vídeos, depois de segmentados, transcritos e diarizados.");
     app.classList.remove("largo");
     app.innerHTML = '<div class="cartao fim' + (C.APPS_SCRIPT_URL && restantes === 0 ? " ok" : "") + '"><h1>Muito obrigado pela participação!</h1>' + status + extra + "</div>" + botaoNovo();
     ligarBotaoNovo();
@@ -624,6 +656,10 @@
       "<p>Como você tem formação jurídica ou trabalha na área judicial, sua participação será como <strong>avaliador(a)</strong>.</p>" +
       "<p>Você vai comparar <strong>dois resumos</strong> gerados pelo plenarIA com o <strong>acórdão</strong> de cada julgamento. " +
       "Avalie apenas se o resumo corresponde ao que foi julgado, <strong>e não se a decisão do tribunal foi correta</strong>. Trabalhe sozinho(a), sem consultar outros avaliadores.</p>" +
+      '<section class="secao"><h2>Como os resumos foram gerados</h2>' +
+      "<p>Os resumos foram produzidos a partir dos <strong>vídeos das sessões judiciárias ordinárias</strong>, e não do acórdão:</p>" + ETAPAS_PIPELINE +
+      '<div class="lista-videos">' + cartaoVideo("A") + cartaoVideo("B") + "</div>" +
+      '<p class="suave">Assistir aos vídeos é opcional. A referência para a avaliação é o acórdão.</p></section>' +
       '<div class="aviso exemplo"><strong>Como classificar cada afirmação do resumo</strong><dl>' +
       "<dt>Sustentada</dt><dd>Consta do acórdão. Ex.: “A decisão foi unânime”, quando o acórdão registra “por unanimidade”.</dd>" +
       "<dt>Não sustentada</dt><dd>Não consta do acórdão, nem para confirmar nem para negar. Ex.: “O relator destacou a gravidade dos fatos”, sem registro disso no acórdão.</dd>" +
@@ -660,7 +696,8 @@
     var html =
       '<div class="cartao"><h1>' + J.sessao + "</h1>" +
       '<p class="contexto">Resumo ' + (S.av.idx + 1) + " de 2 · " + J.rotulo + "</p>" +
-      '<p class="suave">Leia o resumo e o acórdão. Você pode consultar os dois enquanto responde.</p></div>' +
+      '<p class="suave">Leia o resumo e o acórdão. Você pode consultar os dois enquanto responde.</p>' +
+      "<p>Este resumo foi gerado a partir do vídeo desta sessão (segmentado, transcrito e diarizado):</p>" + cartaoVideo(j) + "</div>" +
       '<div class="lado-a-lado">' +
       '<div class="painel"><div class="painel-cab"><span>Resumo do plenarIA</span></div><article class="material plenaria"><div class="folha-corpo">' + J.plenaria + "</div></article></div>" +
       '<div class="painel"><div class="painel-cab"><span>' + J.acordaoNome + "</span>" +

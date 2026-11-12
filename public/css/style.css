@@ -563,3 +563,30 @@ table.afirmacoes tr.faltando td { background: var(--perigo-suave); }
   table.afirmacoes td.radio label { justify-content: flex-start; align-items: center; gap: .625rem; padding: .5rem 0; }
   .rot-cel { position: static; width: auto; height: auto; overflow: visible; clip-path: none; font-size: 1rem; }
 }
+
+/* ---------- Origem dos resumos: etapas e cartões de vídeo ---------- */
+.etapas { padding-left: 1.5rem; margin: .75rem 0 1rem; }
+.etapas li { margin-bottom: .5rem; }
+.lista-videos { display: grid; gap: .75rem; margin: 1rem 0; }
+.aviso .cartao-video { margin-top: .75rem; }
+.cartao-video {
+  display: flex; align-items: center; gap: .875rem;
+  padding: .875rem 1rem;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-controle);
+  color: var(--conteudo);
+  text-decoration: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.cartao-video:hover { border-color: var(--marca-clara); box-shadow: var(--sombra-cartao); color: var(--conteudo); }
+.cartao-video:focus-visible { outline: none; box-shadow: var(--anel); }
+.cartao-video-play {
+  flex: 0 0 auto; display: grid; place-items: center;
+  width: 3rem; height: 3rem; border-radius: 50%;
+  background: #c4302b; color: #fff;
+}
+.cartao-video-play svg { margin-left: 3px; }
+.cartao-video-texto { display: flex; flex-direction: column; min-width: 0; }
+.cartao-video-titulo { font-weight: 600; overflow-wrap: break-word; }
+.cartao-video-acao { color: var(--marca); font-size: .9375rem; }
